@@ -100,7 +100,7 @@ def check_mail():
                     if result[0] == 'OK':
                         print(f"Message {num} copied to {destination_folder} successfully.")
                         # delete the original email
-                        #mail.store(num, '+FLAGS', '\\Deleted')  
+                        mail.store(num, '+FLAGS', '\\Deleted')  
                     else:
                         print(f"Failed to copy message {num}. Server response: {result}. Message not deleted.")
                     break
@@ -142,15 +142,14 @@ def process_attachment(df):
     # Add a column with the date parsed in the calling function
     diaria['fechaCorrespondeParseada'] = df.iloc[0, 2]
     diaria['id'] = df.iloc[0, 4]
+    # add column with the date parsed from K2 cell in the spreadsheet
+    date_value = pd.read_excel(os.path.join(ATTACH_DIR, df.iloc[0,3]), usecols="K", nrows=2, header=None).iloc[1,0]
+    diaria['fechaPlanilla'] = date_value
     # filter out NaN values from the 'fondo' column
     diaria = diaria.dropna(subset=['fondo'])
     diaria.to_sql(name = 'diariaFIMA', con = db.engine, index = False, schema = 'public', if_exists='append')
     
     
-
-
-
-
 
 if __name__ == "__main__":
     print(f"Iniciando chequeo de mails en la casilla data@outlier.com.ar a las {time.ctime()}")
