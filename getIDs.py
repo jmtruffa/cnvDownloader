@@ -69,7 +69,7 @@ def getTablaFromURL():
         if table is None:
             print("No encontré ninguna tabla en la página.")
             return
-
+        print("Recorriendo la tabla para extraer los datos...")
         # Extract data from the table
         rows = table.find_all('tr')[1:]  # Skip the header row
         fechas_documento = []
