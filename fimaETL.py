@@ -67,7 +67,6 @@ def check_mail():
                     # extract the date from the subject
                     print(email_message['Subject'])
                     date_match = date_pattern.search(email_message['Subject'])
-                    print("date_match", date_match)
                     if date_match:
                         # Extracted date string
                         date_str = date_match.group(1)
@@ -86,7 +85,6 @@ def check_mail():
                         f.write(part.get_payload(decode=True))
                         # pause 1 seconds to prevent having the same timestamp in the file name
                         time.sleep(1)
-                    print(f"Attachment {file_name} saved successfully.")
                     emails_df = pd.DataFrame([{
                         'fechaRecepcion': email_datetime,
                         'descripcion': email_message['Subject'],
