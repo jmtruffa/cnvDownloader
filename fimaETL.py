@@ -67,6 +67,7 @@ def check_mail():
                     # extract the date from the subject
                     print(email_message['Subject'])
                     date_match = date_pattern.search(email_message['Subject'])
+                    print("date_match", date_match)
                     if date_match:
                         # Extracted date string
                         date_str = date_match.group(1)
@@ -77,6 +78,7 @@ def check_mail():
                     # assign a file_path adding 
                     email_datetime = email.utils.parsedate_to_datetime(email_message['date'])
                     email_datetime_formatted = email_datetime.strftime('%Y%m%d_%H-%M-%S')
+                    print(f"Saving attachment {file_name} received on {email_datetime} to {ATTACH_DIR}")
 
                     file_name = f"{email_datetime_formatted}_{file_name}_{date_str}"
                     file_path = os.path.join(ATTACH_DIR, file_name)
@@ -84,7 +86,7 @@ def check_mail():
                         f.write(part.get_payload(decode=True))
                         # pause 1 seconds to prevent having the same timestamp in the file name
                         time.sleep(1)
-                    
+                    print(f"Attachment {file_name} saved successfully.")
                     emails_df = pd.DataFrame([{
                         'fechaRecepcion': email_datetime,
                         'descripcion': email_message['Subject'],
@@ -92,10 +94,12 @@ def check_mail():
                         'fileName': file_name
                     }])
                     emails_df['id'] = emails_df.apply(lambda x: generate_uuid(), axis=1)
-                    
+                    print("Enviando a almacenar mail en la base de datos")
                     load_mail_to_db(emails_df)
+                    print("Enviando a procesar el archivo")
                     process_attachment(emails_df)
                     # Move the email to the destination folder
+                    print(f"Moving email {num} to {destination_folder}")
                     result = mail.copy(num, destination_folder)
                     if result[0] == 'OK':
                         print(f"Message {num} copied to {destination_folder} successfully.")
