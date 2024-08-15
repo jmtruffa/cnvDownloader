@@ -24,7 +24,7 @@ def download_file(df, db):
     # Create a temporary directory to store the downloaded files
     tempDir = tempfile.mkdtemp()
     #tempDir = "/tmp/scrape"
-    print(f"Carpeta temporal: {tempDir}")
+    #print(f"Carpeta temporal: {tempDir}")
 
     options = Options()
     options.add_argument('--headless')  # Ensure headless mode is enabled
@@ -88,17 +88,17 @@ def download_file(df, db):
         # si la función fue exitosa, cambiamos el valor de descargado a True
         if status:
             # actualizamos el valor de descargado en la base de datos
-            print(f"Actualizando el valor de descargado en la base de datos para el ID {row['ID']}")
+            print(f"Actualizando el valor descargado en la base de datos para el ID {row['ID']}")
             query = f'UPDATE "archivosCAFCI" SET descargado = True WHERE \"ID\" = \'{row["ID"]}\';'
             db.execute_query(query)
         else:
-            print(f"Hubo un error al parsear el archivo {downloadedFiles}. No se actualizó el valor de descargado en la base de datos.")
+            print(f"Hubo un error al parsear el archivo {downloadedFiles}. No se actualizó el valor descargado en la base de datos.")
 
         print(f"Borramos el archivo {downloadedFiles} descargado de la carpeta temporal.")
         # borramos el archivos en tempDir
         os.remove(os.path.join(tempDir, downloadedFiles))
 
-        print(f"Archivo {downloadedFiles} parseado y guardado en la base de datos. Continuando con el siguiente archivo.")
+        #print(f"Archivo {downloadedFiles} parseado y guardado en la base de datos. Continuando con el siguiente archivo.")
 
     # Termine. Cierro el browser y vuelvo
     driver.quit()
@@ -170,7 +170,7 @@ def parse_excel_file(downloadedFiles, db, ID) -> bool:
     df.iloc[:, 4] = pd.to_datetime(df.iloc[:, 4], format='%d/%m/%y').dt.date
 
     # Convertimos las columnas numericas a float pero primero lo sacamos algunos caracteres inválidos
-    df.iloc[:,5] = pd.to_numeric(df.iloc[:,5], errors='coerce')
+    p = pd.to_numeric(df.iloc[:,5], errors='coerce')
 
     # Agregamos una columna, ID, que nos indica los datos a qué bajada pertenecen
     df['ID'] = ID

@@ -15,6 +15,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from DataBaseConn import DatabaseConnection
 
 def getTablaFromURL():
@@ -39,9 +40,11 @@ def getTablaFromURL():
 
         # URL of the webpage
         url = 'https://www.cnv.gov.ar/SitioWeb/FondosComunesInversion/CuotaPartes'
+        
 
         # Load the webpage
         print(f"Cargando la página {url}")
+
         driver.get(url)
         print(f"Página cargada")
 
@@ -143,7 +146,7 @@ def grabaTabla(df):
     db.disconnect() 
 
 if __name__ == "__main__":
-    print(f"Iniciando...")
+    print(f"Iniciando obtención de IDs de la página de CNV a las {time.ctime()}")
 
     # baja la tabla y la devuelve en un dataframe
     tabla = getTablaFromURL()
@@ -151,3 +154,6 @@ if __name__ == "__main__":
     # grabamos la tabla en la base de datos
     print(f"Grabando tabla en la base de datos...")
     grabaTabla(tabla)
+
+    print(f"Proceso finalizado a las {time.ctime()}")
+    print("-----------------------------------------------------------------")
