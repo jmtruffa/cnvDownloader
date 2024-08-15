@@ -8,7 +8,7 @@ import pandas as pd
 import locale
 import os
 from io import StringIO
-from bs4 import BeautifulSoupº
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
