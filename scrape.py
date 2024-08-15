@@ -160,9 +160,14 @@ def parse_excel_file(downloadedFiles, db, ID) -> bool:
         "minimoInversion",
         "regularizacionLey27743"
     ]
-    
-    # asignamos nuevos nombres a las columnas
-    df.columns = nombresColumna
+
+   # Si df tiene 44 columnas, es un archivo de los viejos y hay que sacar la última columna de nombresColumna
+    if df.shape[1] == 44:
+        nombresColumna = nombresColumna[:-1]
+        df.columns = nombresColumna
+        df['regularizacionLey27743'] = None
+    else:
+        df.columns = nombresColumna
 
     # Eliminamos las filas que tienen el atributo clasMoneda vacío y asi nos quitamos de encima los títulos intermedios
     df = df.dropna(subset=["clasMoneda"])
