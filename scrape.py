@@ -157,7 +157,8 @@ def parse_excel_file(downloadedFiles, db, ID) -> bool:
         "idFondoCNVpadre",
         "tipoEscision",
         "repatriacion",
-        "minimoInversion"
+        "minimoInversion",
+        "regularizacionLey27743"
     ]
     
     # asignamos nuevos nombres a las columnas
