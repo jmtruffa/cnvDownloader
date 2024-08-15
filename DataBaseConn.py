@@ -64,7 +64,8 @@ class DatabaseConnection:
             
             # wrapping the query in a text() function allows SQLAlchemy to correctly run it
             self.conn.execute(text(query))
-            return self.conn.commit()
+            return True
+           # return self.conn.commit()
             
             #return pd.read_sql(query, self.conn)
             

@@ -170,8 +170,8 @@ def parse_excel_file(downloadedFiles, db, ID) -> bool:
     # Convertimos la columna fecha a datetime sin la hora
     df.iloc[:, 4] = pd.to_datetime(df.iloc[:, 4], format='%d/%m/%y').dt.date
 
-    # Convertimos las columnas numericas a float pero primero lo sacamos algunos caracteres inválidos
-    p = pd.to_numeric(df.iloc[:,5], errors='coerce')
+    # Convertimos la columna 5 a float pero primero le sacamos algunos caracteres inválidos con coerce. pondrá NaN en esos casos
+    df.iloc[:,5] = pd.to_numeric(df.iloc[:,5], errors='coerce')
 
     # Agregamos una columna, ID, que nos indica los datos a qué bajada pertenecen
     df['ID'] = ID
