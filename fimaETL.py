@@ -34,7 +34,8 @@ def check_mail():
     # connect to the mail server using SSL
 
     # Regular expression to match the date pattern in the subject
-    date_pattern = re.compile(r'(\d{2}-\d{2}-\d{4})')
+    #date_pattern = re.compile(r'(\d{2}-\d{2}-\d{4})')
+    date_pattern = re.compile(r'(\d{2}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4})')
 
     mail = imaplib.IMAP4_SSL(MAIL_SERVER, MAIL_PORT)
     mail.login(MAIL_USER, MAIL_PASSWORD)
@@ -71,8 +72,17 @@ def check_mail():
                         # Extracted date string
                         date_str = date_match.group(1)
                     
-                        # Convert the date string to a datetime object with hours, minutes and seconds to account for 
-                        fechaCorrespondeParseada = datetime.strptime(date_str, '%d-%m-%Y')
+                        # Convert the date string to a datetime object with hours, minutes and seconds to account for
+                        from datetime import datetime
+
+                        try:
+                            # Try to parse with a 4-digit year
+                            fechaCorrespondeParseada = datetime.strptime(date_str, '%d-%m-%Y')
+                        except ValueError:
+                            # If it fails, fall back to a 2-digit year
+                            fechaCorrespondeParseada = datetime.strptime(date_str, '%d-%m-%y')
+ 
+                        #fechaCorrespondeParseada = datetime.strptime(date_str, '%d-%m-%Y')
 
                     # assign a file_path adding 
                     email_datetime = email.utils.parsedate_to_datetime(email_message['date'])
