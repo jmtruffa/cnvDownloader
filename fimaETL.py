@@ -70,7 +70,8 @@ def check_mail():
                     date_match = date_pattern.search(email_message['Subject'])
                     if date_match:
                         # Extracted date string
-                        date_str = date_match.group(1)
+                        date_str = date_match.group(0)
+                        date_str = re.sub(r'[\/]', '-', date_str)
                     
                         # Convert the date string to a datetime object with hours, minutes and seconds to account for
                         from datetime import datetime
