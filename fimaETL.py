@@ -35,7 +35,7 @@ def check_mail():
 
     # Regular expression to match the date pattern in the subject
     #date_pattern = re.compile(r'(\d{2}-\d{2}-\d{4})')
-    date_pattern = re.compile(r'(\d{2}[-/]\d{2}[-/]\d{2}|\d{2}[-/]\d{2}[-/]\d{4})')
+    date_pattern = re.compile(r'\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}')
 
     mail = imaplib.IMAP4_SSL(MAIL_SERVER, MAIL_PORT)
     mail.login(MAIL_USER, MAIL_PASSWORD)
