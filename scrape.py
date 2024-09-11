@@ -12,7 +12,16 @@ import time
 import tempfile
 import os
 import pandas as pd
-from DataBaseConn import DatabaseConnection
+#from DataBaseConn import DatabaseConnection
+import sqlalchemy
+
+
+db_user = os.environ.get('POSTGRES_USER')
+db_password = os.environ.get('POSTGRES_PASSWORD')
+db_host = os.environ.get('POSTGRES_HOST')
+db_port = os.environ.get('POSTGRES_PORT', '5432')  # Default port for PostgreSQL is 5432
+db_name = os.environ.get('POSTGRES_DB')
+dtypeMap = {'date': sqlalchemy.types.Date}
 
 
 
@@ -90,7 +99,9 @@ def download_file(df, db):
             # actualizamos el valor de descargado en la base de datos
             print(f"Actualizando el valor descargado en la base de datos para el ID {row['ID']}")
             query = f'UPDATE "archivosCAFCI" SET descargado = True WHERE \"ID\" = \'{row["ID"]}\';'
-            db.execute_query(query)
+            #db.execute_query(query)
+            with db.connect() as conn:
+                conn.execute(sqlalchemy.text(query))
         else:
             print(f"Hubo un error al parsear el archivo {downloadedFiles}. No se actualizó el valor descargado en la base de datos.")
 
@@ -182,7 +193,7 @@ def parse_excel_file(downloadedFiles, db, ID) -> bool:
     df['ID'] = ID
 
     # Grabar el df en la base de datos
-    df.to_sql(name = 'tablaTempFCI', con = db.engine, index = False, schema = 'public', if_exists='append')
+    df.to_sql(name = 'tablaTempFCI', con = db, index = False, schema = 'public', if_exists='append')
     #db.to_sql(df, "tablaTempFCI")
 
     print(f"Archivo {downloadedFiles} parseado y guardado en la base de datos.")
@@ -198,7 +209,7 @@ def which_IDs(db):
 
     # consultamos cuales tienen descargado = False
     query = 'SELECT * FROM "archivosCAFCI" WHERE descargado = False;'
-    df = pd.read_sql(query, db.engine)
+    df = pd.read_sql(query, db)
 
     # retornamos el df
     return df
@@ -206,8 +217,9 @@ def which_IDs(db):
 
 if __name__ == "__main__":
     # Traer los IDs que no han sido descargados
-    db = DatabaseConnection(db_type="postgresql", db_name= os.environ.get('POSTGRES_DB'))
-    db.connect()
+    # db = DatabaseConnection(db_type="postgresql", db_name= os.environ.get('POSTGRES_DB'))
+    # db.connect()
+    db = sqlalchemy.create_engine(f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
     
     # Imprimimos hora y día de comienzo
     print(f"Iniciando descarga de archivos el día {pd.Timestamp.now()}")
@@ -215,11 +227,14 @@ if __name__ == "__main__":
     # Qué archivos no han sido descargados?
     df = which_IDs(db)
 
-    # Descargar los archivos de los IDs
-    # vamos a probar solo con el primero
-    download_file(df, db)
+    # si df vuelve vacío, no hay archivos para descargar
+    if not df.empty:
+        # Descargar los archivos de los IDs
+        # vamos a probar solo con el primero
+        download_file(df, db)
 
-    print(f"Descarga de archivos finalizada el día {pd.Timestamp.now()}")
-    print("-----------------------------------------------------------------")
-
-    db.disconnect()
+        print(f"Descarga de archivos finalizada el día {pd.Timestamp.now()}")
+        print("-----------------------------------------------------------------")
+    else:
+        print("No hay archivos para descargar. Finalizando.")
+    # db.disconnect()
