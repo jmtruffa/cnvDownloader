@@ -158,6 +158,10 @@ def process_attachment(df):
     # add column with the date parsed from K2 cell in the spreadsheet
     date_value = pd.read_excel(os.path.join(ATTACH_DIR, df.iloc[0,3]), usecols="K", nrows=2, header=None).iloc[1,0]
     diaria['fechaPlanilla'] = date_value
+
+    # Clean 'varVcp' column, replace '-' with NaN and convert to numeric
+    diaria['varVcp'] = pd.to_numeric(diaria['varVcp'], errors='coerce')
+    
     # filter out NaN values from the 'fondo' column
     diaria = diaria.dropna(subset=['fondo'])
     diaria.to_sql(name = 'diariaFIMA', con = db.engine, index = False, schema = 'public', if_exists='append')
@@ -165,6 +169,12 @@ def process_attachment(df):
     
 
 if __name__ == "__main__":
+    import os
+
+    print("Environment variables:")
+    for key in ["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "MAIL_USER", "MAIL_PASSWORD", "MAIL_SERVER", "MAIL_PORT", "ATTACH_DIR", "FIMA_FROM_ADDRESS"]:
+        print(f"{key}: {os.environ.get(key)}")
+    
     print(f"Iniciando chequeo de mails en la casilla data@outlier.com.ar a las {time.ctime()}")
 
     db = DatabaseConnection(db_type="postgresql", db_name= os.environ.get('POSTGRES_DB'))
