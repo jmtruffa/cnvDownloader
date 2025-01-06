@@ -70,14 +70,14 @@ def download_file(df, db):
         driver.get(url)
 
         # Give time for the page to load if necessary
-        time.sleep(5)
+        time.sleep(10)
 
         # Locate the download link using class name and other attributes if needed
         download_link = driver.find_element(By.CSS_SELECTOR, 'a.downloadFile')
         download_link.click()
 
         # Wait for the download to complete
-        time.sleep(5)
+        time.sleep(20)
 
         # vamos a buscar el nombre del archivo descargado. Debería descargar uno solo
         downloadedFiles = set(os.listdir(tempDir))
@@ -95,15 +95,33 @@ def download_file(df, db):
         status = parse_excel_file(downloadedFiles, db, row['ID'])
 
         # si la función fue exitosa, cambiamos el valor de descargado a True
+        #acá comenzo el comment
+        # if status:
+        #     # actualizamos el valor de descargado en la base de datos
+        #     print(f"Actualizando el valor descargado en la base de datos para el ID {row['ID']}")
+        #     query = f'UPDATE "archivosCAFCI" SET descargado = True, procesado_ok = True WHERE "ID" = \'{row["ID"]}\';'
+        #     #db.execute_query(query)
+        #     with db.connect() as conn:
+        #         conn.execute(sqlalchemy.text(query))
+        # else:
+        #     print(f"Hubo un error al parsear el archivo {downloadedFiles}. No se actualizó el valor descargado en la base de datos.")
+        #acá termino el comment
+
         if status:
-            # actualizamos el valor de descargado en la base de datos
+        # actualizamos el valor de descargado en la base de datos
             print(f"Actualizando el valor descargado en la base de datos para el ID {row['ID']}")
-            query = f'UPDATE "archivosCAFCI" SET descargado = True WHERE \"ID\" = \'{row["ID"]}\';'
-            #db.execute_query(query)
-            with db.connect() as conn:
-                conn.execute(sqlalchemy.text(query))
+            query = f'UPDATE "archivosCAFCI" SET descargado = True, procesado_ok = True WHERE "ID" = \'{row["ID"]}\';'
+            # print(f"Executing query: {query}")  # Debugging: print the query
+            try:
+                with db.connect() as conn:
+                    result = conn.execute(sqlalchemy.text(query))
+                    conn.commit()  # Commit the transaction
+                    print(f"Query executed successfully, {result.rowcount} rows affected.")  # Debugging: print the number of affected rows
+            except Exception as e:
+                print(f"An error occurred while executing the query: {e}")  # Debugging: print any exceptions
         else:
             print(f"Hubo un error al parsear el archivo {downloadedFiles}. No se actualizó el valor descargado en la base de datos.")
+
 
         print(f"Borramos el archivo {downloadedFiles} descargado de la carpeta temporal.")
         # borramos el archivos en tempDir
@@ -172,13 +190,21 @@ def parse_excel_file(downloadedFiles, db, ID) -> bool:
         "regularizacionLey27743"
     ]
 
-   # Si df tiene 44 columnas, es un archivo de los viejos y hay que sacar la última columna de nombresColumna
+    # Si df tiene 44 columnas, es un archivo de los viejos y hay que sacar la última columna de nombresColumna y seguir procesando.
+    # Si tiene 45 columnas, es un archivo de los nuevos y hay que seguir procesando con los nombres de columnas asignados
+    # Si tiene cualquier otro número de columnas, es un archivo raro y no lo vamos a procesar. Informamos cuantas columnas tiene, ponemos que no se proceso y retornamos False
     if df.shape[1] == 44:
         nombresColumna = nombresColumna[:-1]
         df.columns = nombresColumna
         df['regularizacionLey27743'] = None
-    else:
+    elif df.shape[1] == 45:
         df.columns = nombresColumna
+    else:
+        print(f"El archivo {downloadedFiles} tiene {df.shape[1]} columnas. No es un archivo común. No se grabará en la base de datos.")
+        query = f'UPDATE "archivosCAFCI" SET procesado_ok = False WHERE \"ID\" = \'{ID}\';'
+        with db.connect() as conn:
+            conn.execute(sqlalchemy.text(query))
+        return False # con esto status será False y no se actualizará el valor descargado en la base de datos
 
     # Eliminamos las filas que tienen el atributo clasMoneda vacío y asi nos quitamos de encima los títulos intermedios
     df = df.dropna(subset=["clasMoneda"])
@@ -190,7 +216,8 @@ def parse_excel_file(downloadedFiles, db, ID) -> bool:
     df.iloc[:,5] = pd.to_numeric(df.iloc[:,5], errors='coerce')
 
     # Agregamos una columna, ID, que nos indica los datos a qué bajada pertenecen
-    df['ID'] = ID
+    df = df.copy()  # Ensure we are working with a copy of the DataFrame
+    df.loc[:, 'ID'] = ID
 
     # Grabar el df en la base de datos
     df.to_sql(name = 'tablaTempFCI', con = db, index = False, schema = 'public', if_exists='append')
@@ -204,11 +231,11 @@ def parse_excel_file(downloadedFiles, db, ID) -> bool:
 def which_IDs(db):
     """
     Devuelve una lista con los IDs de los archivos que no se han descargado.
-    Parsea la tabla archivosCAFCI y obtiene los IDS, hrefs que tienen descargado = False
+    Parsea la tabla archivosCAFCI y obtiene los IDS, hrefs que tienen descargado = False y que procesado_ok = NULL (esto último quiere decir que todavía no se intentó procesar)
     """
 
     # consultamos cuales tienen descargado = False
-    query = 'SELECT * FROM "archivosCAFCI" WHERE descargado = False;'
+    query = 'SELECT * FROM "archivosCAFCI" WHERE descargado = False and procesado_ok is NULL;'
     df = pd.read_sql(query, db)
 
     # retornamos el df
@@ -238,3 +265,4 @@ if __name__ == "__main__":
     else:
         print("No hay archivos para descargar. Finalizando.")
     # db.disconnect()
+
