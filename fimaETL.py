@@ -171,9 +171,11 @@ def process_attachment(df):
 if __name__ == "__main__":
     import os
 
-    print("Environment variables:")
-    for key in ["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "MAIL_USER", "MAIL_PASSWORD", "MAIL_SERVER", "MAIL_PORT", "ATTACH_DIR", "FIMA_FROM_ADDRESS"]:
-        print(f"{key}: {os.environ.get(key)}")
+    # comentamos estas líneas que estaban agregadas para debug.
+    # Me daban todos los valores de las variables de entorno para poder chequear que estén bien seteadas
+    # print("Environment variables:")
+    # for key in ["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "MAIL_USER", "MAIL_PASSWORD", "MAIL_SERVER", "MAIL_PORT", "ATTACH_DIR", "FIMA_FROM_ADDRESS"]:
+    #     print(f"{key}: {os.environ.get(key)}")
     
     print(f"Iniciando chequeo de mails en la casilla data@outlier.com.ar a las {time.ctime()}")
 
