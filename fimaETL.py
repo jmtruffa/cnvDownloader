@@ -155,8 +155,12 @@ def process_attachment(df):
     # Add a column with the date parsed in the calling function
     diaria['fechaCorrespondeParseada'] = df.iloc[0, 2]
     diaria['id'] = df.iloc[0, 4]
-    # add column with the date parsed from K2 cell in the spreadsheet
-    date_value = pd.read_excel(os.path.join(ATTACH_DIR, df.iloc[0,3]), usecols="K", nrows=2, header=None).iloc[1,0]
+    # La fecha puede venir en K2 (más usual) pero también en H2 o H3 (la he visto en esos dos también). 
+    # Esta forma captura las 3 celdas y luego asigna a date_value aquella que no es nula. Si no hay nada, pasará con null.
+    date_value1 = pd.read_excel(os.path.join(ATTACH_DIR, df.iloc[0,3]), usecols="K", nrows=2, header=None).iloc[1,0]
+    date_value2 = pd.read_excel(os.path.join(ATTACH_DIR, df.iloc[0,3]), usecols="H", nrows=2, header=None).iloc[1,0]
+    date_value3 = pd.read_excel(os.path.join(ATTACH_DIR, df.iloc[0,3]), usecols="H", nrows=3, header=None).iloc[1,0]
+    date_value = next((val for val in [date_value1, date_value2, date_value3] if pd.notna(val)), None)
     diaria['fechaPlanilla'] = date_value
 
     # Clean 'varVcp' column, replace '-' with NaN and convert to numeric
