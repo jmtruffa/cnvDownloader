@@ -187,7 +187,8 @@ def parse_excel_file(downloadedFiles, db, ID) -> bool:
         "tipoEscision",
         "repatriacion",
         "minimoInversion",
-        "regularizacionLey27743"
+        "regularizacionLey27743",
+        "tipodinero"
     ]
 
     # Si df tiene 44 columnas, es un archivo de los viejos y hay que sacar la última columna de nombresColumna y seguir procesando.
@@ -197,7 +198,7 @@ def parse_excel_file(downloadedFiles, db, ID) -> bool:
         nombresColumna = nombresColumna[:-1]
         df.columns = nombresColumna
         df['regularizacionLey27743'] = None
-    elif df.shape[1] == 45:
+    elif df.shape[1] == 46:
         df.columns = nombresColumna
     else:
         print(f"El archivo {downloadedFiles} tiene {df.shape[1]} columnas. No es un archivo común. No se grabará en la base de datos.")
