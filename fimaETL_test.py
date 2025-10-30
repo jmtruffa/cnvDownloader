@@ -18,7 +18,7 @@ MAIL_SERVER = os.getenv("MAIL_SERVER")
 MAIL_PORT = os.getenv("MAIL_PORT")
 MAIL_USER = os.getenv("MAIL_USER")
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
-ATTACH_DIR = os.getenv("ATTACH_DIR")
+ATTACH_DIR = ATTACH_DIR = "/Users/juan/Google Drive/Mi unidad/dev/temp/"  #os.path.expanduser("~")
 FIMA_FROM_ADDRESS = os.getenv("FIMA_FROM_ADDRESS")
 destination_folder = 'INBOX.fima_archivados'
 
@@ -208,9 +208,14 @@ if __name__ == "__main__":
     db = DatabaseConnection(db_type="postgresql", db_name= os.environ.get('POSTGRES_DB'))
     db.connect()
 
-    check_mail()
+    #check_mail()
+    process_attachment(pd.DataFrame([{
+        'fechaRecepcion': datetime.now(),
+        'descripcion': 'FIMA - 01-01-2021',
+        'fechaCorrespondeParseada': datetime(2021,1,1),
+        'fileName': 'Cuota FIMA.xls',
+        'id': generate_uuid()
+    }]))
 
 
     db.disconnect()
-
-
